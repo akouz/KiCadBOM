@@ -1,0 +1,324 @@
+object Form1: TForm1
+  Left = 410
+  Height = 465
+  Top = 137
+  Width = 847
+  Caption = 'KiCAD BOM Generator'
+  ClientHeight = 445
+  ClientWidth = 847
+  Menu = MainMenu1
+  OnCreate = FormCreate
+  LCLVersion = '1.4.0.4'
+  object PageControl1: TPageControl
+    Left = 103
+    Height = 2
+    Top = 175
+    Width = 6
+    TabOrder = 1
+  end
+  object StatusBar: TStatusBar
+    Left = 0
+    Height = 23
+    Top = 422
+    Width = 847
+    Panels = <    
+      item
+        Width = 150
+      end    
+      item
+        Width = 150
+      end    
+      item
+        Width = 150
+      end    
+      item
+        Width = 50
+      end>
+    SimplePanel = False
+  end
+  object PageControl: TPageControl
+    Left = 0
+    Height = 422
+    Top = 0
+    Width = 847
+    ActivePage = TabSheet2
+    Align = alClient
+    Font.CharSet = ANSI_CHARSET
+    Font.Height = -12
+    Font.Name = 'Arial'
+    Font.Pitch = fpVariable
+    Font.Quality = fqDraft
+    Font.Style = [fsBold]
+    ParentFont = False
+    TabIndex = 1
+    TabOrder = 2
+    object TabSheet1: TTabSheet
+      Caption = 'Separate'
+      ClientHeight = 394
+      ClientWidth = 839
+      Font.CharSet = ANSI_CHARSET
+      Font.Height = -13
+      Font.Name = 'Arial'
+      Font.Pitch = fpVariable
+      Font.Quality = fqDraft
+      Font.Style = [fsBold]
+      ParentFont = False
+      object SG1: TStringGrid
+        Left = 0
+        Height = 394
+        Top = 0
+        Width = 839
+        Align = alClient
+        AlternateColor = 14275517
+        AutoAdvance = aaDown
+        AutoEdit = False
+        AutoFillColumns = True
+        ColCount = 8
+        Columns = <        
+          item
+            Alignment = taCenter
+            ButtonStyle = cbsButton
+            MinSize = 50
+            ReadOnly = True
+            Title.Alignment = taCenter
+            Title.Caption = 'Ref'
+            Width = 102
+          end        
+          item
+            Alignment = taCenter
+            MinSize = 100
+            Title.Alignment = taCenter
+            Title.Caption = 'Value'
+            Width = 102
+          end        
+          item
+            Alignment = taCenter
+            Title.Alignment = taCenter
+            Title.Caption = 'Footprint'
+            Width = 102
+          end        
+          item
+            Title.Alignment = taCenter
+            Title.Caption = 'Ordering code'
+            Width = 102
+          end        
+          item
+            Title.Alignment = taCenter
+            Title.Caption = 'Manufacturer'
+            Width = 102
+          end        
+          item
+            Title.Alignment = taCenter
+            Title.Caption = 'Supplier'
+            Width = 102
+          end        
+          item
+            Alignment = taCenter
+            Title.Alignment = taCenter
+            Title.Caption = 'Price'
+            Width = 102
+          end        
+          item
+            Title.Alignment = taCenter
+            Title.Caption = 'Notes'
+            Width = 104
+          end>
+        Constraints.MinHeight = 100
+        Constraints.MinWidth = 100
+        FixedCols = 0
+        Font.CharSet = ANSI_CHARSET
+        Font.Height = -12
+        Font.Name = 'Arial'
+        Font.Pitch = fpVariable
+        Font.Quality = fqDraft
+        HeaderHotZones = []
+        Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goColSizing, goAutoAddRows, goRowSelect, goSmoothScroll, goFixedColSizing, goRowHighlight]
+        ParentFont = False
+        RowCount = 50
+        TabOrder = 0
+        TitleFont.CharSet = ANSI_CHARSET
+        TitleFont.Height = -13
+        TitleFont.Name = 'Arial'
+        TitleFont.Pitch = fpVariable
+        TitleFont.Quality = fqDraft
+        TitleFont.Style = [fsBold]
+        TitleStyle = tsStandard
+        ColWidths = (
+          102
+          102
+          102
+          102
+          102
+          102
+          102
+          104
+        )
+      end
+      object Button1: TButton
+        Left = 696
+        Height = 25
+        Top = 88
+        Width = 75
+        Caption = 'Button1'
+        TabOrder = 1
+        Visible = False
+      end
+      object Button2: TButton
+        Left = 696
+        Height = 25
+        Top = 120
+        Width = 75
+        Caption = 'Button2'
+        TabOrder = 2
+        Visible = False
+      end
+      object Button3: TButton
+        Left = 696
+        Height = 25
+        Top = 160
+        Width = 75
+        Caption = 'Button3'
+        TabOrder = 3
+        Visible = False
+      end
+      object Button4: TButton
+        Left = 696
+        Height = 25
+        Top = 200
+        Width = 75
+        Caption = 'Button4'
+        TabOrder = 4
+        Visible = False
+      end
+    end
+    object TabSheet2: TTabSheet
+      Caption = 'Grouped'
+      ClientHeight = 394
+      ClientWidth = 839
+      Font.CharSet = ANSI_CHARSET
+      Font.Height = -12
+      Font.Name = 'Arial'
+      Font.Pitch = fpVariable
+      Font.Quality = fqDraft
+      Font.Style = [fsBold]
+      ParentFont = False
+      object SG2: TStringGrid
+        Left = 0
+        Height = 394
+        Top = 0
+        Width = 839
+        Align = alClient
+        AlternateColor = 12900542
+        AutoAdvance = aaDown
+        AutoFillColumns = True
+        ColCount = 8
+        Columns = <        
+          item
+            Title.Alignment = taCenter
+            Title.Caption = 'Ref'
+            Width = 102
+          end        
+          item
+            Alignment = taCenter
+            Title.Alignment = taCenter
+            Title.Caption = 'Value'
+            Width = 102
+          end        
+          item
+            Alignment = taCenter
+            Title.Alignment = taCenter
+            Title.Caption = 'Footprint'
+            Width = 102
+          end        
+          item
+            Title.Alignment = taCenter
+            Title.Caption = 'Ordering code'
+            Width = 102
+          end        
+          item
+            Title.Alignment = taCenter
+            Title.Caption = 'Manufacturer'
+            Width = 102
+          end        
+          item
+            Title.Alignment = taCenter
+            Title.Caption = 'Supplier'
+            Width = 102
+          end        
+          item
+            Alignment = taCenter
+            Title.Alignment = taCenter
+            Title.Caption = 'Price'
+            Width = 102
+          end        
+          item
+            Alignment = taCenter
+            Title.Alignment = taCenter
+            Title.Caption = 'Q-ty'
+            Width = 104
+          end>
+        DefaultDrawing = False
+        FixedCols = 0
+        RowCount = 20
+        TabOrder = 0
+        TitleFont.CharSet = ANSI_CHARSET
+        TitleFont.Height = -12
+        TitleFont.Name = 'Arial'
+        TitleFont.Pitch = fpVariable
+        TitleFont.Quality = fqDraft
+        TitleFont.Style = [fsBold]
+        ColWidths = (
+          102
+          102
+          102
+          102
+          102
+          102
+          102
+          104
+        )
+      end
+    end
+  end
+  object MainMenu1: TMainMenu
+    left = 208
+    top = 112
+    object FileMenuItem: TMenuItem
+      Caption = 'File'
+      object MenuItem1: TMenuItem
+        Caption = 'New BOM'
+        OnClick = MenuItem1Click
+      end
+      object MenuItem3: TMenuItem
+        Caption = 'Add KiCAD SCH file'
+        OnClick = MenuItem3Click
+      end
+      object SaveMenuItem: TMenuItem
+        Caption = 'Save BOM'
+        OnClick = SaveMenuItemClick
+      end
+      object MenuItem2: TMenuItem
+        Caption = '-'
+      end
+      object ExitMenuItem: TMenuItem
+        Caption = 'Exit'
+        OnClick = ExitMenuItemClick
+      end
+    end
+    object AboutMenuItem: TMenuItem
+      Caption = 'About'
+      OnClick = AboutMenuItemClick
+    end
+  end
+  object OpenDialog1: TOpenDialog
+    Filter = 'KiCAD SCH|*.sch|All files|*.*'
+    left = 312
+    top = 112
+  end
+  object SaveDialog1: TSaveDialog
+    DefaultExt = '.csv'
+    Filter = 'CSV|*.csv|Text files|*.txt|All files|*.*'
+    left = 416
+    top = 112
+  end
+end
