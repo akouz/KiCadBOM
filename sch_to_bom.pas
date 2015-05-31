@@ -377,7 +377,6 @@ begin
     FPartsList.AddComp(comp);
   end;
   FPartsList.MakeCSV;
-  FPartsList.SaveToFile('test.txt');
 end;
 
 // ==================================================
