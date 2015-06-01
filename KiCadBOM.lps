@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CONFIG>
+  <ProjectSession>
+    <PathDelim Value="\"/>
+    <Version Value="9"/>
+    <BuildModes Active="Default"/>
+    <Units Count="4">
+      <Unit0>
+        <Filename Value="KiCadBOM.lpr"/>
+        <IsPartOfProject Value="True"/>
+        <UsageCount Value="23"/>
+      </Unit0>
+      <Unit1>
+        <Filename Value="main.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="Form1"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+        <UnitName Value="main"/>
+        <TopLine Value="94"/>
+        <CursorPos X="33" Y="127"/>
+        <UsageCount Value="23"/>
+        <Loaded Value="True"/>
+        <LoadedDesigner Value="True"/>
+      </Unit1>
+      <Unit2>
+        <Filename Value="sch_to_bom.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="sch_to_bom"/>
+        <IsVisibleTab Value="True"/>
+        <EditorIndex Value="2"/>
+        <TopLine Value="317"/>
+        <CursorPos Y="351"/>
+        <UsageCount Value="23"/>
+        <Loaded Value="True"/>
+      </Unit2>
+      <Unit3>
+        <Filename Value="bom_to_pl.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="bom_to_pl"/>
+        <EditorIndex Value="1"/>
+        <TopLine Value="7"/>
+        <CursorPos X="25" Y="25"/>
+        <UsageCount Value="23"/>
+        <Loaded Value="True"/>
+      </Unit3>
+    </Units>
+    <JumpHistory Count="21" HistoryIndex="20">
+      <Position1>
+        <Filename Value="bom_to_pl.pas"/>
+      </Position1>
+      <Position2>
+        <Filename Value="sch_to_bom.pas"/>
+        <Caret Line="40" Column="24" TopLine="11"/>
+      </Position2>
+      <Position3>
+        <Filename Value="sch_to_bom.pas"/>
+        <Caret Line="247" Column="29" TopLine="231"/>
+      </Position3>
+      <Position4>
+        <Filename Value="sch_to_bom.pas"/>
+        <Caret Line="245" Column="21" TopLine="222"/>
+      </Position4>
+      <Position5>
+        <Filename Value="sch_to_bom.pas"/>
+        <Caret Line="247" Column="38" TopLine="226"/>
+      </Position5>
+      <Position6>
+        <Filename Value="sch_to_bom.pas"/>
+        <Caret Line="248" Column="37" TopLine="227"/>
+      </Position6>
+      <Position7>
+        <Filename Value="sch_to_bom.pas"/>
+        <Caret Line="247" Column="38" TopLine="226"/>
+      </Position7>
+      <Position8>
+        <Filename Value="sch_to_bom.pas"/>
+        <Caret Line="240" Column="10" TopLine="226"/>
+      </Position8>
+      <Position9>
+        <Filename Value="sch_to_bom.pas"/>
+        <Caret Line="249" Column="20" TopLine="227"/>
+      </Position9>
+      <Position10>
+        <Filename Value="sch_to_bom.pas"/>
+        <Caret Line="248" Column="22" TopLine="227"/>
+      </Position10>
+      <Position11>
+        <Filename Value="sch_to_bom.pas"/>
+        <Caret Line="249" Column="27" TopLine="228"/>
+      </Position11>
+      <Position12>
+        <Filename Value="sch_to_bom.pas"/>
+        <Caret Line="252" Column="51" TopLine="228"/>
+      </Position12>
+      <Position13>
+        <Filename Value="sch_to_bom.pas"/>
+        <Caret Line="250" TopLine="228"/>
+      </Position13>
+      <Position14>
+        <Filename Value="sch_to_bom.pas"/>
+        <Caret Line="45" Column="14" TopLine="27"/>
+      </Position14>
+      <Position15>
+        <Filename Value="sch_to_bom.pas"/>
+        <Caret Line="255" Column="13" TopLine="231"/>
+      </Position15>
+      <Position16>
+        <Filename Value="sch_to_bom.pas"/>
+        <Caret Line="258" Column="42" TopLine="236"/>
+      </Position16>
+      <Position17>
+        <Filename Value="sch_to_bom.pas"/>
+        <Caret Line="40" Column="22" TopLine="26"/>
+      </Position17>
+      <Position18>
+        <Filename Value="sch_to_bom.pas"/>
+        <Caret Line="245" Column="31" TopLine="229"/>
+      </Position18>
+      <Position19>
+        <Filename Value="sch_to_bom.pas"/>
+        <Caret Line="247" Column="16" TopLine="224"/>
+      </Position19>
+      <Position20>
+        <Filename Value="sch_to_bom.pas"/>
+        <Caret Line="245" Column="10" TopLine="224"/>
+      </Position20>
+      <Position21>
+        <Filename Value="sch_to_bom.pas"/>
+        <Caret Line="246" Column="26" TopLine="227"/>
+      </Position21>
+    </JumpHistory>
+  </ProjectSession>
+</CONFIG>
