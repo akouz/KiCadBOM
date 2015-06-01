@@ -1,10 +1,10 @@
 object Form1: TForm1
-  Left = 410
+  Left = 338
   Height = 465
-  Top = 137
+  Top = 188
   Width = 847
   Caption = 'KiCAD BOM Generator'
-  ClientHeight = 445
+  ClientHeight = 446
   ClientWidth = 847
   Menu = MainMenu1
   OnCreate = FormCreate
@@ -18,8 +18,8 @@ object Form1: TForm1
   end
   object StatusBar: TStatusBar
     Left = 0
-    Height = 23
-    Top = 422
+    Height = 20
+    Top = 426
     Width = 847
     Panels = <    
       item
@@ -38,7 +38,7 @@ object Form1: TForm1
   end
   object PageControl: TPageControl
     Left = 0
-    Height = 422
+    Height = 426
     Top = 0
     Width = 847
     ActivePage = TabSheet2
@@ -121,7 +121,7 @@ object Form1: TForm1
           item
             Title.Alignment = taCenter
             Title.Caption = 'Notes'
-            Width = 104
+            Width = 105
           end>
         Constraints.MinHeight = 100
         Constraints.MinWidth = 100
@@ -132,7 +132,6 @@ object Form1: TForm1
         Font.Pitch = fpVariable
         Font.Quality = fqDraft
         HeaderHotZones = []
-        Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goColSizing, goAutoAddRows, goRowSelect, goSmoothScroll, goFixedColSizing, goRowHighlight]
         ParentFont = False
         RowCount = 50
         TabOrder = 0
@@ -151,7 +150,7 @@ object Form1: TForm1
           102
           102
           102
-          104
+          105
         )
       end
       object Button1: TButton
@@ -193,7 +192,7 @@ object Form1: TForm1
     end
     object TabSheet2: TTabSheet
       Caption = 'Grouped'
-      ClientHeight = 394
+      ClientHeight = 398
       ClientWidth = 839
       Font.CharSet = ANSI_CHARSET
       Font.Height = -12
@@ -204,7 +203,7 @@ object Form1: TForm1
       ParentFont = False
       object SG2: TStringGrid
         Left = 0
-        Height = 394
+        Height = 398
         Top = 0
         Width = 839
         Align = alClient
@@ -255,10 +254,16 @@ object Form1: TForm1
             Alignment = taCenter
             Title.Alignment = taCenter
             Title.Caption = 'Q-ty'
-            Width = 104
+            Width = 105
           end>
         DefaultDrawing = False
         FixedCols = 0
+        Font.CharSet = ANSI_CHARSET
+        Font.Height = -12
+        Font.Name = 'Arial'
+        Font.Pitch = fpVariable
+        Font.Quality = fqDraft
+        ParentFont = False
         RowCount = 20
         TabOrder = 0
         TitleFont.CharSet = ANSI_CHARSET
@@ -275,7 +280,7 @@ object Form1: TForm1
           102
           102
           102
-          104
+          105
         )
       end
     end
