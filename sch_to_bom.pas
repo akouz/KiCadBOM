@@ -37,11 +37,14 @@ private
     function is_excluded_ref(ss:string) : boolean;
     procedure ClrComp;
     procedure AddComp;
+    function  ExFootprintPrefix(val : string) : string;
+    procedure FillCompField(fld : integer; val : string);
     procedure FillComp;
     procedure ParseFile;
     procedure ParseString(ss:string);
 public
     FExcludedRef : TStringList;
+    FExcludedFootPrefix : TStringList;
     FPartsList : TKicadSchPL;
     procedure MakePartList;
     procedure UpdateFields;
@@ -230,15 +233,88 @@ begin
 end;
 
 // ==================================================
+// Separate and exclude prefix from footprint string
+// ==================================================
+function TKicadSchBOM.ExFootprintPrefix(val: string): string;
+var i : integer;
+    s : string;
+    c : char;
+begin
+  s := '';
+  result := val;
+  for i:=1 to Length(val)-1 do begin
+    c := val[i];
+    s := s + UpperCase(c);
+    if FExcludedFootPrefix.IndexOf(s) >= 0 then begin
+      result := Copy(val, i+1, Length(val));
+      break;
+    end;
+  end;
+end;
+
+// ==================================================
+// Fill specified component field with value
+// ==================================================
+procedure TKicadSchBOM.FillCompField(fld: integer; val: string);
+var n : integer;
+    refname : string;
+begin
+  n := 0;
+  case fld of
+    // ------------------------------
+    ord(sepRef): begin
+      if val[1] = '#' then  // power symbol
+        comp_mode := false
+      else begin
+        refname := ExtractRefDesName(val,n);
+        if FExcludedRef.IndexOf(AnsiUpperCase(refname)) >= 0 then
+          comp_mode := false
+        else begin
+          FComp.Strings[ord(sepRef)]  := val;
+          FComp.Strings[ord(sepRefName)] := refname;
+          FComp.Strings[ord(sepRefIndex)] := IntToStr(n);
+        end;
+      end;
+    end;
+    // ------------------------------
+    ord(sepValue): begin
+      FComp.Strings[ord(sepValue)] := val;
+    end;
+    // ------------------------------
+    ord(sepFootprint): begin
+      FComp.Strings[ord(sepFootprint)] := ExFootprintPrefix(val);
+    end;
+    // ------------------------------
+    ord(sepBrand): begin
+       FComp.Strings[ord(sepBrand)] := val;
+    end;
+    // ------------------------------
+    ord(sepOrder): begin
+       FComp.Strings[ord(sepOrder)] := val;
+    end;
+    // ------------------------------
+    ord(sepSupplier): begin
+       FComp.Strings[ord(sepSupplier)] := val;
+    end;
+    // ------------------------------
+    ord(sepPrice): begin
+       FComp.Strings[ord(sepPrice)] := val;
+    end;
+    // ------------------------------
+    ord(sepNote): begin
+       FComp.Strings[ord(sepNote)] := val;
+    end;
+  end;
+end;
+
+// ==================================================
 // Fill component fields from parsed string (FTmp)
 // ==================================================
 procedure TKicadSchBOM.FillComp;
 var fnm : string; // field name
     fno : string;
     fval : string;
-    n : integer;
 begin
-  n := 0;
   // -----------------------------------
   // if it is a filed string
   // -----------------------------------
@@ -250,16 +326,11 @@ begin
       // ---------------------------
       fno := FTmp.Strings[1];
       if fno = '0' then begin
-        if fval[1] = '#' then  // power symbol
-          comp_mode := false
-        else begin
-          FComp.Strings[ord(sepRef)]  := fval;
-          FComp.Strings[ord(sepRefName)] := ExtractRefDesName(fval,n);
-        end;
+        FillCompField(ord(sepRef), fval);
       end else if fno = '1' then begin
-        FComp.Strings[ord(sepValue)] := fval
+        FillCompField(ord(sepValue), fval);
       end  else if fno = '2' then begin
-        FComp.Strings[ord(sepFootprint)] := fval
+        FillCompField(ord(sepFootprint), fval);
       end
       // ---------------------------
       // user-defined fields
@@ -267,9 +338,15 @@ begin
       else if FTmp.Count > 10 then begin
         fnm := AnsiLowerCase(FTmp.Strings[10]);
         if (fnm = 'brand') or (fnm = 'manuf') or (fnm = 'manufacturer') then begin
-          FComp.Strings[ord(sepBrand)] := fval
-        end else if (fnm = 'order') then begin
-          FComp.Strings[ord(sepOrder)] := fval;
+          FillCompField(ord(sepBrand), fval);
+        end else if (fnm = 'ord') or (fnm = 'order') or (fnm = 'ordering') or (fnm = 'order code')then begin
+          FillCompField(ord(sepOrder), fval);
+        end else if (fnm = 'suppl') or (fnm = 'supplier') or (fnm = 'suppliers') then begin
+          FillCompField(ord(sepSupplier), fval);
+        end else if (fnm = 'price') or (fnm = 'cost') then begin
+          FillCompField(ord(sepPrice), fval);
+        end else if (fnm = 'note') or (fnm = 'notes') then begin
+          FillCompField(ord(sepNote), fval);
         end;
       end;
     end;
@@ -468,6 +545,7 @@ end;
 constructor TKicadSchBOM.Create;
 begin
   FExcludedRef := TStringList.Create;
+  FExcludedFootPrefix := TStringList.Create;
   FSrc := TStringList.Create;
   FTmp := TStringList.Create;
   FComp := TStringList.Create;
@@ -487,6 +565,7 @@ begin
   FComp.Free;
   FFileNames.Free;
   FExcludedRef.Free;
+  FExcludedFootPrefix.Free;
   FPartsList.Free;
   inherited Destroy;
 end;
