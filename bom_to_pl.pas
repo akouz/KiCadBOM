@@ -22,7 +22,7 @@ uses
 
 type
   sep_bom_fields = (  sepRef, sepValue, sepFootprint, sepOrder, sepBrand, sepSupplier,
-            sepPrice, sepNote, sepRefName, sepOther );
+            sepPrice, sepNote, sepRefName, sepRefIndex, sepOther );
   gr_bom_fields = (  grRef, grValue, grFootprint, grOrder, grBrand, grSupplier,
             grPrice, grQty, grRefName, grOther );
 
@@ -176,7 +176,7 @@ procedure TKicadSchPL.AddComp(comp: TStringList);
 var tmp : TStringList;
     i : integer;
     refname, refdes, value, footprint, order, brand, supplier : string;
-    valueX, footprintX, orderX, brandX, supplierX : string;
+    footprintX, orderX, brandX, supplierX : string;
 begin
   // --------------------------------
   // RefDes and Value must exist
@@ -198,11 +198,10 @@ begin
          // If such a field already exists - compare fields
          // ------------------------
          if i >= 0 then begin
-           valueX     := AnsiUpperCase(GetField(i, ord(grValue)));
            footprintX := AnsiUpperCase(GetField(i, ord(grFootprint)));
            orderX     := AnsiUpperCase(GetField(i, ord(grOrder)));
            brandX     := AnsiUpperCase(GetField(i, ord(grBrand)));
-           supplier   := AnsiUpperCase(GetField(i, ord(grSupplier)));
+           supplierX   := AnsiUpperCase(GetField(i, ord(grSupplier)));
            if (footprint <> '') and (footprintX <> '') and (footprint <> footprintX) then
              i := -2
            else if (order <> '') and (orderX <> '') and (order <> orderX) then
