@@ -2,7 +2,7 @@ unit main;
 
 {
 * Author    A.Kouznetsov
-* Rev       1.0 dated 30/5/2015
+* Rev       1.01 dated 4/6/2015
 Redistribution and use in source and binary forms, with or without modification, are permitted.
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
 TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
@@ -20,7 +20,7 @@ interface
 
 uses
   Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, Menus,
-  StdCtrls, Grids, ExtCtrls, ComCtrls, IniFiles, sch_to_bom;
+  StdCtrls, Grids, ExtCtrls, ComCtrls, IniFiles, sch_to_bom, CSVdocument;
 
 type
 
@@ -31,6 +31,8 @@ type
     Button2: TButton;
     Button3: TButton;
     Button4: TButton;
+    GroupBox1: TGroupBox;
+    ListBox1: TListBox;
     MainMenu1: TMainMenu;
     FileMenuItem: TMenuItem;
     AboutMenuItem: TMenuItem;
@@ -38,16 +40,18 @@ type
     MenuItem3: TMenuItem;
     OpenDialog1: TOpenDialog;
     PageControl: TPageControl;
-    PageControl1: TPageControl;
     SaveDialog1: TSaveDialog;
     SaveMenuItem: TMenuItem;
     MenuItem2: TMenuItem;
     ExitMenuItem: TMenuItem;
+    Splitter1: TSplitter;
     StatusBar: TStatusBar;
     SG1: TStringGrid;
     SG2: TStringGrid;
+    StringGrid1: TStringGrid;
     TabSheet1: TTabSheet;
-    TabSheet2: TTabSheet;
+    TabSheetSep: TTabSheet;
+    TabSheetGr: TTabSheet;
     procedure AboutMenuItemClick(Sender: TObject);
     procedure Button1Click(Sender: TObject);
     procedure Button2Click(Sender: TObject);
@@ -69,10 +73,13 @@ var
   Form1: TForm1;
   SchBOM : TKicadSchBOM;
   BomFileName : string;
+const
+  revision = '1.01';
 
 // ###########################################################################
 implementation
 // ###########################################################################
+
 
 {$R *.lfm}
 
@@ -104,6 +111,9 @@ var Inif : TIniFile;
 begin
   SchBOM := TKicadSchBOM.Create;
   Inif := TIniFile.Create('KiCadBOM.ini');
+  // --------------------------
+  // Exclude components with certain RefDes
+  // --------------------------
   for i:=1 to 1000 do begin
     si := 'Ref'+IntToStr(i);
     s := AnsiUpperCase(Inif.ReadString('Excluded Ref',si,''));
@@ -111,6 +121,17 @@ begin
       break
     else
       SchBOM.FExcludedRef.Add(s);
+  end;
+  // --------------------------
+  // Exclude library prefixes from footprints
+  // --------------------------
+  for i:=1 to 1000 do begin
+    si := 'Prefix'+IntToStr(i);
+    s := AnsiUpperCase(Inif.ReadString('Excluded Footprint Prefix',si,''));
+    if s = '' then
+      break
+    else
+      SchBOM.FExcludedFootPrefix.Add(s);
   end;
   Inif.Free;
 end;
@@ -157,7 +178,7 @@ end;
 // ==================================================
 procedure TForm1.AboutMenuItemClick(Sender: TObject);
 begin
-  ShowMessage('KiCAD BOM Generator rev 1.0'+char(13)+'This program is free software');
+  ShowMessage('KiCAD BOM Generator rev '+revision+char(13)+'This program is free software');
 end;
 
 // ==================================================
@@ -202,13 +223,18 @@ end;
 // ==================================================
 procedure TForm1.Button4Click(Sender: TObject);
 begin
-  SaveDialog1.FileName := BomFileName+'_BOM.csv';
-  if SaveDialog1.execute then begin
-     SchBOM.SaveToFile(SaveDialog1.FileName);
-  end;
-  SaveDialog1.FileName := BomFileName+'_PL.csv';
-  if SaveDialog1.execute then begin
-     SchBOM.FPartsList.SaveToFile(SaveDialog1.FileName);
+  if PageControl.TabIndex = 0 then begin;
+    SaveDialog1.Title := 'BOM with individual items - save as';
+    SaveDialog1.FileName := BomFileName+'_BOM.csv';
+    if SaveDialog1.execute then begin
+       SchBOM.SaveToFile(SaveDialog1.FileName);
+    end;
+  end else begin
+  SaveDialog1.Title := 'BOM with grouped items - save as';
+    SaveDialog1.FileName := BomFileName+'_PL.csv';
+    if SaveDialog1.execute then begin
+       SchBOM.FPartsList.SaveToFile(SaveDialog1.FileName);
+    end;
   end;
 end;
 
@@ -222,4 +248,3 @@ end;
 
 
 end.
-
