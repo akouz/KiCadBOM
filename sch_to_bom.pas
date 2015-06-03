@@ -2,7 +2,7 @@ unit sch_to_bom;
 
 {
 * Author    A.Kouznetsov
-* Rev       1.0 dated 30/5/2015
+* Rev       1.01 dated 4/6/2015
 Redistribution and use in source and binary forms, with or without modification, are permitted.
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
 TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
@@ -26,15 +26,13 @@ type
 
 TKicadSchBOM = class(TStringList)
 private
-    quot_mode : boolean;      // quotation mode
+    quote_mode : boolean;      // quotation mode
     comp_mode : boolean;      // component mode
     comp_cnt : integer;
     Ftmp : TStringList;
     FComp: TStringList;  // current component
     FSrc : TStringList;
     FFileNames : TStringList;
-    function is_separator(c: char): boolean;
-    function is_excluded_ref(ss:string) : boolean;
     procedure ClrComp;
     procedure AddComp;
     function  ExFootprintPrefix(val : string) : string;
@@ -156,50 +154,6 @@ end;
 { TKicadSchBOM }
 
 // ==================================================
-// Check if char is a separator
-// ==================================================
-function TKicadSchBOM.is_separator(c: char): boolean;
-begin
-  result := false;
-  if quot_mode then begin
-     if c = '"' then begin
-       quot_mode := false;
-       result := true;
-     end;
-  end else begin
-    if ord(c) <= ord(' ') then
-      result := true
-    else begin
-      if c = '"' then begin
-        quot_mode := true;
-        result := true;
-      end;
-    end;
-  end;
-end;
-
-// ==================================================
-// Check if specified sepRef should be excluded from the list
-// ==================================================
-function TKicadSchBOM.is_excluded_ref(ss: string): boolean;
-var s : string;
-    c : char;
-    i : integer;
-begin
-  result := false;
-  s := '';
-  for i := 1 to Length(ss) do begin
-    c := ss[i];
-    if c in ['0'..'9'] then
-      break
-    else
-      s := s+c;
-  end;
-  if FExcludedRef.IndexOf(AnsiUpperCase(s)) >= 0 then
-    result := true;
-end;
-
-// ==================================================
 // Clear component
 // ==================================================
 procedure TKicadSchBOM.ClrComp;
@@ -219,16 +173,21 @@ var i : integer;
     tmp : TStringList;
 begin
   if Trim(FComp.Strings[0]) <> '' then begin
-    if is_excluded_ref(FComp.Strings[ord(sepRefName)]) = false then begin
-      s := '';
-      tmp := TStringList.Create;
-      for i:=0 to ord(sepOther)-1 do begin
-        s := s + FComp.Strings[i] + ' ; ';
-        tmp.Add(FComp.Strings[i]);
+    s := '';
+    tmp := TStringList.Create;
+    for i:=0 to ord(sepOther)-1 do begin
+      if i <= ord(sepNote) then begin
+        if i = ord(sepPrice) then
+          s := s + FComp.Strings[i]               // price is number
+        else
+          s := s + '"' + FComp.Strings[i] + '"'; // other cells are strings
+      if i < ord(sepNote) then
+        s := s + char(9);         // add TABs
       end;
-      self.AddObject(s, (tmp as TObject));
-      inc(comp_cnt);
+      tmp.Add(FComp.Strings[i]);
     end;
+    self.AddObject(s, (tmp as TObject));
+    inc(comp_cnt);
   end;
 end;
 
@@ -345,7 +304,7 @@ begin
           FillCompField(ord(sepSupplier), fval);
         end else if (fnm = 'price') or (fnm = 'cost') then begin
           FillCompField(ord(sepPrice), fval);
-        end else if (fnm = 'note') or (fnm = 'notes') then begin
+        end else if (fnm = 'note') or (fnm = 'notes') or (fnm = 'comment') or (fnm = 'comments') then begin
           FillCompField(ord(sepNote), fval);
         end;
       end;
@@ -414,35 +373,65 @@ begin
 end;
 
 // ==================================================
-// Parse string
+// Parse string - separate into words and store words in Ftmp
 // ==================================================
 procedure TKicadSchBOM.ParseString(ss: string);
 var i : integer;
     s : string;
     c : char;
+    was_backslash : boolean;
 begin
-  quot_mode := false;
+  quote_mode := false;
+  was_backslash := false;
   Ftmp.Clear;
   s := '';
   for i:=1 to length(ss) do begin
     c := ss[i];
-    if is_separator(c) then begin
-      s := Trim(s);
-      if s <> '' then begin
-        Ftmp.Add(s);
+    // --------------------
+    // quoted text
+    // --------------------
+    if quote_mode then begin
+      if c = char(9) then         // replace TABs
+        c := ' ';
+      if was_backslash then begin // it is a second char of esc-pair
+        if (c = '\') or (c = '"') then
+          s := s + c              // convert legal esc-pair into a single char
+        else
+          s := s + '\' + c;       // it should not happen: incomplete esc-pair
+        was_backslash := false;   // esc-pair finished
+      end else begin
+        if c = '"' then begin     // closing quote is a separator
+          quote_mode := false;
+          Ftmp.Add(s);            // even if string is empty
+          s := '';
+        end else if c = '\' then  // esc-pair starts
+          was_backslash := true
+        else
+          s := s + c;
       end;
-      s := '';
-    end else
-      s := s + c;
+    // --------------------
+    // without quote
+    // --------------------
+    end else begin
+      if c = '"' then begin
+        quote_mode := true;        // quoted text started
+        s := '';
+      end else begin
+        if ord(c) <= ord(' ') then begin  // if a separator char
+          if s <> '' then
+            Ftmp.Add(s);
+          s := '';
+        end else
+          s := s + c;
+      end;
+    end;
   end;
-  s := Trim(s);
-  if s <> '' then begin
+  if s <> '' then
     Ftmp.Add(s);
-  end;
 end;
 
 // ==================================================
-// Make parts list out of BOM
+// Make grouped BOM out of separate items
 // ==================================================
 procedure TKicadSchBOM.MakePartList;
 var i : integer;
@@ -528,7 +517,7 @@ end;
 procedure TKicadSchBOM.Reset;
 var i : integer;
 begin
-  quot_mode := false;
+  quote_mode := false;
   comp_mode := false;
   comp_cnt := 0;
   for i:=0 to Count-1 do
@@ -571,4 +560,3 @@ begin
 end;
 
 end.
-
