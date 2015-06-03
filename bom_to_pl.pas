@@ -1,7 +1,7 @@
 unit bom_to_pl;
 {
 * Author    A.Kouznetsov
-* Rev       1.0 dated 31/5/2015
+* Rev       1.01 dated 4/6/2015
 Redistribution and use in source and binary forms, with or without modification, are permitted.
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
 TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
@@ -30,11 +30,12 @@ type
 
 TKicadSchPL = class(TStringList)
 private
+  same_comp : array [0..$FF] of integer;
   procedure AddRefDes(i : integer; ss : string);
   procedure IncQty(i : integer);
   procedure SetField(i, fld : integer; val : string);
   function GetField(i, fld : integer) : string;
-  function FindField(fld : integer; val : string; refname : string) : integer;
+  function FindField(fld : integer; val : string; fp : string; refname : string) : integer;
 public
   procedure ToStringGrid(SG : TStringGrid);
   procedure MakeCSV;
@@ -107,24 +108,40 @@ begin
 end;
 
 // ==================================================
-// Find specified field, return index
+// Find specified field, return count
 // ==================================================
-function TKicadSchPL.FindField(fld: integer; val: string; refname : string): integer;
+function TKicadSchPL.FindField(fld: integer; val: string; fp : string; refname : string): integer;
 var sl : TStringList;
     i : integer;
+    s : string;
 begin
-  result := -1;
+  result := 0;
   if Trim(val) <> '' then begin   // if valid
     for i:=0 to Count-1 do begin
       sl := Objects[i] as TStringList;
-      if AnsiUpperCase(sl.Strings[fld]) =  AnsiUpperCase(val) then begin
+      s := sl.Strings[fld];
+      if AnsiUpperCase(s) =  AnsiUpperCase(val) then begin
         // ------------------------------
         // also reference type must be the same
         // ------------------------------
-        if AnsiUpperCase(sl.Strings[ord(grRefName)]) = AnsiUpperCase(refname) then begin
-          result := i;
-          break;
-        end;
+        s := sl.Strings[ord(grRefName)];
+        if AnsiUpperCase(s) = AnsiUpperCase(refname) then
+          // ------------------------------
+          // also footprints must be the same
+          // ------------------------------
+          s := sl.Strings[ord(grFootprint)];
+          if ( AnsiUpperCase(s) = AnsiUpperCase(fp)) then begin
+            same_comp[result] := i;
+            if result < $FF  then
+              inc(result);
+          // ------------------------------
+          // or one of footprints should not be defined
+          // ------------------------------
+          end else if (fp = '') or (sl.Strings[ord(grFootprint)] = '') then begin
+            same_comp[result] := i;
+            if result < $FF  then
+              inc(result);
+          end;
       end;
     end;
   end;
@@ -161,9 +178,14 @@ begin
     sl := Objects[i] as TStringList;
     s := '';
     for j:=0 to ord(grQty) do begin
-      s := s + sl.Strings[j];
-      if j < ord(grQty) then
-        s := s + ' ; ';
+      if j < ord(grPrice) then begin
+        s := s + '"' +  sl.Strings[j] + '"'; // first cells are text
+        s := s + char(9);                    // add TABs
+      end else begin
+        s := s + sl.Strings[j];              // last 2 cells are numbers
+        if j < ord(grQty) then
+           s := s + char(9);                 // add TABs except the last cell
+      end;
     end;
     Strings[i] := s;
   end;
@@ -174,7 +196,8 @@ end;
 // ==================================================
 procedure TKicadSchPL.AddComp(comp: TStringList);
 var tmp : TStringList;
-    i : integer;
+    i, j, cnt : integer;
+    accept : boolean;
     refname, refdes, value, footprint, order, brand, supplier : string;
     footprintX, orderX, brandX, supplierX : string;
 begin
@@ -190,29 +213,38 @@ begin
       order     := AnsiUpperCase(comp.Strings[ord(sepOrder)]);
       brand     := AnsiUpperCase(comp.Strings[ord(sepBrand)]);
       supplier  := AnsiUpperCase(comp.Strings[ord(sepSupplier)]);
+      if refname = 'T' then
+        cnt := 0;
       // ----------------------------
       // If value defined
       // ----------------------------
-         i := FindField(ord(grValue), value, refname);
+         cnt := FindField(ord(grValue), value, footprint, refname);
          // ------------------------
          // If such a field already exists - compare fields
          // ------------------------
-         if i >= 0 then begin
-           footprintX := AnsiUpperCase(GetField(i, ord(grFootprint)));
-           orderX     := AnsiUpperCase(GetField(i, ord(grOrder)));
-           brandX     := AnsiUpperCase(GetField(i, ord(grBrand)));
-           supplierX   := AnsiUpperCase(GetField(i, ord(grSupplier)));
-           if (footprint <> '') and (footprintX <> '') and (footprint <> footprintX) then
-             i := -2
-           else if (order <> '') and (orderX <> '') and (order <> orderX) then
-             i := -3
-           else if (brand <> '') and (brandX <> '') and (brand <> brandX) then
-             i := -4;
+         accept := false;
+         if cnt > 0 then begin
+           for j:=0 to cnt-1 do begin
+             i := same_comp[j];
+             footprintX := AnsiUpperCase(GetField(i, ord(grFootprint)));
+             orderX     := AnsiUpperCase(GetField(i, ord(grOrder)));
+             brandX     := AnsiUpperCase(GetField(i, ord(grBrand)));
+             supplierX   := AnsiUpperCase(GetField(i, ord(grSupplier)));
+             accept := true;
+             if (footprint <> '') and (footprintX <> '') and (footprint <> footprintX) then
+               accept := false
+             else if (order <> '') and (orderX <> '') and (order <> orderX) then
+               accept := false
+             else if (brand <> '') and (brandX <> '') and (brand <> brandX) then
+               accept := false;
+             if accept then
+               break;
+           end;
          end;
          // ------------------------
          // If it is the same component
          // ------------------------
-         if i >= 0 then begin
+         if accept then begin
            IncQty(i);        // increment Q-ty
            AddRefDes(i, refdes);
            // update empty fields
@@ -276,4 +308,3 @@ begin
 end;
 
 end.
-
