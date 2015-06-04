@@ -20,7 +20,7 @@ interface
 
 uses
   Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, Menus,
-  StdCtrls, Grids, ExtCtrls, ComCtrls, IniFiles, sch_to_bom, CSVdocument;
+  StdCtrls, Grids, ExtCtrls, ComCtrls, IniFiles, sch_to_bom;
 
 type
 
