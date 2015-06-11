@@ -3,6 +3,7 @@ unit inventory_unit;
 {
 * Author    A.Kouznetsov
 * Rev       1.02 dated 4/6/2015
+* Requires  CSVdocument.pas     http://sourceforge.net/p/lazarus-ccr/svn/2871/tree/components/csvdocument/csvdocument.pas
 Redistribution and use in source and binary forms, with or without modification, are permitted.
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
 TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
