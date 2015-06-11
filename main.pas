@@ -19,50 +19,57 @@ interface
 // ###########################################################################
 
 uses
-  Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, Menus,
-  StdCtrls, Grids, ExtCtrls, ComCtrls, IniFiles, sch_to_bom;
+  Classes, SysUtils, Windows, FileUtil, Forms, Controls, Graphics, Dialogs, Menus,
+  StdCtrls, Grids, ExtCtrls, ComCtrls, IniFiles, sch_to_bom, inventory_unit;
 
 type
 
   { TForm1 }
 
   TForm1 = class(TForm)
-    Button1: TButton;
-    Button2: TButton;
-    Button3: TButton;
-    Button4: TButton;
     GroupBox1: TGroupBox;
-    ListBox1: TListBox;
     MainMenu1: TMainMenu;
     FileMenuItem: TMenuItem;
-    AboutMenuItem: TMenuItem;
-    MenuItem1: TMenuItem;
-    MenuItem3: TMenuItem;
+    Pop1CopyTo: TMenuItem;
+    Pop1CopyFrom: TMenuItem;
+    Pop1Find: TMenuItem;
+    MiAbout: TMenuItem;
+    MiNewBom: TMenuItem;
+    MiAddSch: TMenuItem;
     OpenDialog1: TOpenDialog;
-    PageControl: TPageControl;
+    PageControl1: TPageControl;
+    PageControl2: TPageControl;
+    Pop1: TPopupMenu;
+    Pop2: TPopupMenu;
     SaveDialog1: TSaveDialog;
-    SaveMenuItem: TMenuItem;
+    MiSaveBom: TMenuItem;
     MenuItem2: TMenuItem;
-    ExitMenuItem: TMenuItem;
+    MiExit: TMenuItem;
     Splitter1: TSplitter;
+    Splitter2: TSplitter;
     StatusBar: TStatusBar;
     SG1: TStringGrid;
     SG2: TStringGrid;
-    StringGrid1: TStringGrid;
+    SG3: TStringGrid;
     TabSheet1: TTabSheet;
+    TabSheet2: TTabSheet;
     TabSheetSep: TTabSheet;
     TabSheetGr: TTabSheet;
-    procedure AboutMenuItemClick(Sender: TObject);
-    procedure Button1Click(Sender: TObject);
-    procedure Button2Click(Sender: TObject);
-    procedure Button3Click(Sender: TObject);
-    procedure Button4Click(Sender: TObject);
-    procedure Button5Click(Sender: TObject);
-    procedure ExitMenuItemClick(Sender: TObject);
+    TreeView1: TTreeView;
+    procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
+    procedure MiAboutClick(Sender: TObject);
+    procedure MiExitClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
-    procedure MenuItem1Click(Sender: TObject);
-    procedure MenuItem3Click(Sender: TObject);
-    procedure SaveMenuItemClick(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
+    procedure FormResize(Sender: TObject);
+    procedure MiNewBomClick(Sender: TObject);
+    procedure MiAddSchClick(Sender: TObject);
+    procedure MiSaveBomClick(Sender: TObject);
+    procedure Pop1FindClick(Sender: TObject);
+    procedure SG2GetCellHint(Sender: TObject; ACol, ARow: Integer;
+      var HintText: String);
+    procedure SG2MouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
+    procedure TreeView1Click(Sender: TObject);
   private
     { private declarations }
   public
@@ -72,9 +79,10 @@ type
 var
   Form1: TForm1;
   SchBOM : TKicadSchBOM;
+  Stock : TKicadStock;
   BomFileName : string;
 const
-  revision = '1.01';
+  revision = '1.02';
 
 // ###########################################################################
 implementation
@@ -106,11 +114,29 @@ end;
 // ==================================================
 procedure TForm1.FormCreate(Sender: TObject);
 var Inif : TIniFile;
-    s, si : string;
-    i : integer;
+    s, ss, sn, si, inv_path, fn : string;
+    i, j, k, x, n : integer;
+    sec: TStringList;
+    inv : boolean;
+    ttn : TTreeNode;
 begin
   SchBOM := TKicadSchBOM.Create;
+  Stock := TKicadStock.Create ;
   Inif := TIniFile.Create('KiCadBOM.ini');
+  // --------------------------
+  // Restore window
+  // --------------------------
+  i := Inif.ReadInteger('Window','Width',0);
+  if i > 400 then
+    Form1.Width := i;
+  i := Inif.ReadInteger('Window','Height',0);
+  if i > 200 then
+    Form1.Height := i;
+  i := Inif.ReadInteger('Window','Left',0);
+  Form1.Left := i;
+  i := Inif.ReadInteger('Window','Top',0);
+  Form1.Top := i;
+  PageControl1.Width := Inif.ReadInteger('Window','Split',200);
   // --------------------------
   // Exclude components with certain RefDes
   // --------------------------
@@ -133,41 +159,234 @@ begin
     else
       SchBOM.FExcludedFootPrefix.Add(s);
   end;
+  // --------------------------
+  // Read inventory (stock) path
+  // --------------------------
+  inv := false;
+  si := 'Path';
+  inv_path := AnsiUpperCase(Inif.ReadString('Inventory',si,''));
   Inif.Free;
+  // --------------------------
+  // Read inventory
+  // --------------------------
+  if inv_path <> '' then begin
+    k := 0;
+    sec := TStringList.Create;
+    Inif := TIniFile.Create(inv_path+'\Inventory.ini');
+    Inif.ReadSections(sec);
+    for j:=0 to sec.Count-1 do begin
+     sn := sec.Strings[j];
+     if j = 0 then
+       TreeView1.Items.Add(nil,sn)
+     else
+       TreeView1.Items.Add(TreeView1.Items[k],sn);
+     k := TreeView1.Items.Count-1;
+     for i:=1 to 1000 do begin
+      // ---------------------
+      // get file name
+      // ---------------------
+       si := 'File'+IntToStr(i);
+       s := Inif.ReadString(sn,si,'');
+       if s = '' then
+         break                   // finish section
+       else begin
+         // ---------------------
+         // get name for TreeView
+         // ---------------------
+         fn := inv_path + '\' + s;
+         if FileExists(fn) then begin
+           // ---------------------
+           // get Ref name
+           // ---------------------
+           si := 'Ref'+IntToStr(i);
+           ss := Trim(Inif.ReadString(sn,si,'?'));
+           Stock.RefNames.Add(ss);
+           // ---------------------
+           // get name
+           // ---------------------
+           si := 'Name'+IntToStr(i);
+           ss := Inif.ReadString(sn,si,'');
+           if ss = '' then
+             ss := file_name_no_ext(s);      // use file name
+           Stock.FileNames.Add(fn);
+           x := Stock.FileNames.Count;
+           ttn := TreeView1.Items.AddChildObject(TreeView1.Items[k],ss, Pointer(x));
+           // ---------------------
+           // load first to SG3
+           // ---------------------
+           if not inv then begin
+             inv := true;
+             ttn.Selected := true;
+             n := Integer(ttn.Data);
+             if n > 0 then begin
+               Stock.ToStringGrid(SG3, n-1);
+             end;
+           end;
+         end;
+       end;
+     end;
+    end;
+    sec.Free;
+    Inif.Free;
+  end;
+end;
+
+// ==================================================
+// Destroy
+// ==================================================
+procedure TForm1.FormDestroy(Sender: TObject);
+begin
+  SchBOM.Free;
+  Stock.Free;
+end;
+
+// ==================================================
+// Form resize
+// ==================================================
+procedure TForm1.FormResize(Sender: TObject);
+var
+  x, y, w, aw, i: integer;
+  MaxWidth: integer;
+  SG : TStringGrid;
+begin
+  for i := 1 to 3 do begin
+    case i of
+     1 : SG := SG1;
+     2 : SG := SG2;
+     3 : SG := SG3;
+    end;
+    aw := 0;
+    with SG do  begin
+      for x := 0 to ColCount-2 do   begin
+        MaxWidth := Canvas.TextWidth(Columns[x].Title.Caption)+10;
+        if MaxWidth < 50 then
+          MaxWidth := 50;
+        for y := 0 to RowCount-1 do
+        begin
+          w := Canvas.TextWidth(Cells[x,y]);
+          if w > MaxWidth then
+            MaxWidth := w;
+        end;
+        ColWidths[x] := MaxWidth + 10;
+        aw := aw + ColWidths[x];
+      end;
+      ColWidths[ColCount-1] := ClientWidth - aw;
+    end;
+  end;
 end;
 
 // ==================================================
 // New BOM
 // ==================================================
-procedure TForm1.MenuItem1Click(Sender: TObject);
+procedure TForm1.MiNewBomClick(Sender: TObject);
 begin
-  Button1Click(Sender);
-  Button2Click(Sender);
+  SchBOM.Reset;
+  SchBOM.ToStringGrid(SG1);
+  SG1.RowCount := 50;
+  SchBOM.FPartsList.ToStringGrid(SG2);
+  SG2.RowCount := 50;
+  MiAddSchClick(Sender);
   BomFileName := ExtractFileName(OpenDialog1.FileName);
   BomFileName := file_name_no_ext(BomFileName);
   StatusBar.Panels[2].Text := BomFileName;
+  FormResize(Sender);
 end;
 
 // ==================================================
 // Add SCH file
 // ==================================================
-procedure TForm1.MenuItem3Click(Sender: TObject);
+procedure TForm1.MiAddSchClick(Sender: TObject);
 begin
-  Button2Click(Sender);
+  if OpenDialog1.execute then begin
+     SchBOM.ReadFile(OpenDialog1.FileName, true);
+     SchBOM.ToStringGrid(SG1);
+     SchBOM.FPartsList.ToStringGrid(SG2);
+     FormResize(Sender);
+  end;
+  StatusBar.Panels[0].Text:=IntToStr(SchBOM.Count-1) + ' items';
+  StatusBar.Panels[1].Text:=IntToStr(SchBOM.FPartsList.Count-1) + ' groups';
 end;
 
 // ==================================================
 // Save BOM
 // ==================================================
-procedure TForm1.SaveMenuItemClick(Sender: TObject);
+procedure TForm1.MiSaveBomClick(Sender: TObject);
 begin
-  Button4Click(Sender);
+  if PageControl1.TabIndex = 0 then begin;
+    SaveDialog1.Title := 'Save BOM';
+    SaveDialog1.FileName := BomFileName+'_BOM.csv';
+    if SaveDialog1.execute then begin
+      SchBOM.SaveCSV(SaveDialog1.FileName, BomFileName, SG1);
+    end;
+  end else begin
+    SaveDialog1.Title := 'Save Grouped BOM';
+    SaveDialog1.FileName := BomFileName+'_PL.csv';
+    if SaveDialog1.execute then begin
+      SchBOM.SaveCSV(SaveDialog1.FileName, BomFileName, SG2);
+    end;
+  end;
+  FormResize(Sender);
 end;
 
 // ==================================================
-// Close
+// Find selected in inventory
 // ==================================================
-procedure TForm1.ExitMenuItemClick(Sender: TObject);
+procedure TForm1.Pop1FindClick(Sender: TObject);
+begin
+
+end;
+
+// ==================================================
+// SG2 cell hint
+// ==================================================
+procedure TForm1.SG2GetCellHint(Sender: TObject; ACol, ARow: Integer;
+  var HintText: String);
+begin
+  if ACol = 0 then
+    SG2.Hint:=HintText;
+end;
+
+// ==================================================
+// SG2 mouse move
+// ==================================================
+procedure TForm1.SG2MouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer
+  );
+var
+  Row, Col: Integer;
+  s : string;
+begin
+  Row := 1;
+  Col := 1;
+  SG2.MouseToCell(X, Y, Col, Row);
+  if Col = 0 then begin
+    s := SchBOM.FPartsList.GetRef(Row);
+    SG2GetCellHint(Sender, Col, Row, s);
+  end else
+    Application.CancelHint;
+end;
+
+// ==================================================
+// Click on inventory group
+// ==================================================
+procedure TForm1.TreeView1Click(Sender: TObject);
+var ttn : TTreeNode;
+    i : integer;
+begin
+  ttn := TreeView1.Selected;
+  if ttn = nil then
+    exit;
+  if not ttn.HasChildren then begin
+    i := Integer(ttn.Data);
+    if i > 0 then begin
+      Stock.ToStringGrid(SG3, i-1);
+    end;
+  end;
+end;
+
+// ==================================================
+// Exit
+// ==================================================
+procedure TForm1.MiExitClick(Sender: TObject);
 begin
   SchBOM.Free;
   Application.Terminate;
@@ -176,75 +395,25 @@ end;
 // ==================================================
 // About
 // ==================================================
-procedure TForm1.AboutMenuItemClick(Sender: TObject);
+procedure TForm1.MiAboutClick(Sender: TObject);
 begin
   ShowMessage('KiCAD BOM Generator rev '+revision+char(13)+'This program is free software');
 end;
 
 // ==================================================
-// New BOM
+// Close
 // ==================================================
-procedure TForm1.Button1Click(Sender: TObject);
+procedure TForm1.FormClose(Sender: TObject; var CloseAction: TCloseAction);
+var Inif : TIniFile;
 begin
-  SchBOM.Reset;
-  SchBOM.ToStringGrid(SG1);
-  SG1.RowCount := 50;
-  SchBOM.FPartsList.ToStringGrid(SG2);
-  SG2.RowCount := 50;
-  StatusBar.Panels[0].Text:=IntToStr(SchBOM.Count-1) + ' parts';
-  StatusBar.Panels[1].Text:=IntToStr(SchBOM.FPartsList.Count-1) + ' items';
+  Inif := TIniFile.Create('KiCadBOM.ini');
+  Inif.WriteInteger('Window','Width',Form1.Width);
+  Inif.WriteInteger('Window','Height',Form1.Height);
+  Inif.WriteInteger('Window','Left',Form1.Left);
+  Inif.WriteInteger('Window','Top',Form1.Top);
+  Inif.WriteInteger('Window','Split',Splitter2.Left);
+  Inif.Free;
 end;
-
-// ==================================================
-// Add SCH
-// ==================================================
-procedure TForm1.Button2Click(Sender: TObject);
-begin
-  if OpenDialog1.execute then begin
-     SchBOM.ReadFile(OpenDialog1.FileName, true);
-     SchBOM.ToStringGrid(SG1);
-     SchBOM.FPartsList.ToStringGrid(SG2);
-     StatusBar.Panels[0].Text:=IntToStr(SchBOM.Count-1) + ' parts';
-     StatusBar.Panels[1].Text:=IntToStr(SchBOM.FPartsList.Count-1) + ' items';
-  end;
-end;
-
-// ==================================================
-// Update missed fields
-// ==================================================
-procedure TForm1.Button3Click(Sender: TObject);
-begin
-  SchBOM.UpdateFields;
-  SchBOM.ToStringGrid(SG1);
-end;
-
-// ==================================================
-// Save BOM
-// ==================================================
-procedure TForm1.Button4Click(Sender: TObject);
-begin
-  if PageControl.TabIndex = 0 then begin;
-    SaveDialog1.Title := 'BOM with individual items - save as';
-    SaveDialog1.FileName := BomFileName+'_BOM.csv';
-    if SaveDialog1.execute then begin
-       SchBOM.SaveToFile(SaveDialog1.FileName);
-    end;
-  end else begin
-  SaveDialog1.Title := 'BOM with grouped items - save as';
-    SaveDialog1.FileName := BomFileName+'_PL.csv';
-    if SaveDialog1.execute then begin
-       SchBOM.FPartsList.SaveToFile(SaveDialog1.FileName);
-    end;
-  end;
-end;
-
-// ==================================================
-// Make parts list
-// ==================================================
-procedure TForm1.Button5Click(Sender: TObject);
-begin
-  SchBOM.MakePartList;
-end;
-
 
 end.
+
