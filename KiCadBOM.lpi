@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <CONFIG>
   <ProjectOptions>
     <Version Value="9"/>
@@ -34,7 +34,7 @@
         <PackageName Value="LCL"/>
       </Item1>
     </RequiredPackages>
-    <Units Count="4">
+    <Units Count="6">
       <Unit0>
         <Filename Value="KiCadBOM.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -57,6 +57,15 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="bom_to_pl"/>
       </Unit3>
+      <Unit4>
+        <Filename Value="csvdocument.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit4>
+      <Unit5>
+        <Filename Value="inventory_unit.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="inventory_unit"/>
+      </Unit5>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -76,9 +85,6 @@
         </Win32>
       </Options>
     </Linking>
-    <Other>
-      <CompilerPath Value="$(CompPath)"/>
-    </Other>
   </CompilerOptions>
   <Debugging>
     <Exceptions Count="3">
