@@ -8,7 +8,7 @@ uses
   {$ENDIF}{$ENDIF}
   Interfaces, // this includes the LCL widgetset
   Forms, main, sch_to_bom, bom_to_pl, csvdocument, inventory_unit
-  { you can add units after this };
+  { you can add units after this  };
 
 {$R *.res}
 
